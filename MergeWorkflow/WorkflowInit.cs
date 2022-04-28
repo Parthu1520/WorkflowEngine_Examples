@@ -6,6 +6,7 @@ using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.DbPersistence;
+using OptimaJet.Workflow.Plugins;
 
 
 namespace MergeWorkflow
@@ -50,6 +51,8 @@ namespace MergeWorkflow
 
             var runtime = new WorkflowRuntime()
                 .WithBuilder(builder)
+                //This plugin contains the CheckAllSubprocessesCompleted condition implementation
+                .WithPlugin(new BasicPlugin())
                 .WithPersistenceProvider(dbProvider)
                 .EnableCodeActions()
                 .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()

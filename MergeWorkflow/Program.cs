@@ -154,6 +154,12 @@ namespace MergeWorkflow
                             {
                                 Id = "BuildSeriesStructure",
                                 Stage = "BuildSeriesStructure",
+                            },
+                            //To show you how CheckAllSubprocessesCompleted works
+                            new StageInfo
+                            {
+                                Id = "GetReadyStatus",
+                                Stage = "GetReadyStatus",
                             }
                         }
 

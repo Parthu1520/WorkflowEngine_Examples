@@ -47,11 +47,9 @@ namespace MergeWorkflow
                 ConcatenationType.And,
                 firstActivity,
                 finalActivity,
-                TriggerDefinition.Auto, //can be replaced new TriggerDefinition(TriggerType.Command) {Command = pd.Commands.First()},
+                new TriggerDefinition(TriggerType.Command) {Command = pd.Commands.First()},
                 conditionList
                 );
-            Transition.Trigger.Type = TriggerType.Command;
-            Transition.Trigger.Command = pd.Commands.First();
             
             //Temporarily commented this because distractions.
             /*Transition.IsFork = true;

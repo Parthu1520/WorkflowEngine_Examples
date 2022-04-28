@@ -31,7 +31,11 @@ namespace MergeWorkflow
                     ImpersonatedIdentityId = "456"
                 };
                 WorkflowInit.Runtime.SetSchemeIsObsolete(pipeline.Name, schemeCreationParameters);
-                WorkflowInit.Runtime.CreateInstanceAsync(createInstanceParameters);
+                WorkflowInit.Runtime.CreateInstance(createInstanceParameters);
+
+                //Example
+                var commands = WorkflowInit.Runtime.GetAvailableCommands(processId, String.Empty);
+                var executionResult = WorkflowInit.Runtime.ExecuteCommand(commands.First(), "", "");
                 Console.ReadLine();
             }
             catch (System.Exception)

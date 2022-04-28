@@ -15,15 +15,17 @@ namespace MergeWorkflow
             ActivityDefinition finalActivity, bool isSubprocess, bool isMerge = false, bool isSubProcessFinal = false)
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
-            TransitionDefinition Transition = TransitionDefinition.Create(TransistionName,
-                                                                          TransitionClassifier.NotSpecified,
-                                                                          ConcatenationType.And,
-                                                                          ConcatenationType.And,
-                                                                          ConcatenationType.And,
-                                                                          firstActivity,
-                                                                          finalActivity,
-                                                                          TriggerDefinition.Auto,
-                                                                          null);
+            var Transition = TransitionDefinition.Create(
+                TransistionName,
+                TransitionClassifier.NotSpecified,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                firstActivity,
+                finalActivity,
+                TriggerDefinition.Auto,
+                null
+                );
             pd.Transitions.Add(Transition);
         }
 
@@ -31,32 +33,37 @@ namespace MergeWorkflow
             ActivityDefinition finalActivity, bool isSubprocess, bool isMerge = false, bool isSubProcessFinal = false)
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
-            var conditionList = new List<ConditionDefinition>();
+            // This condition list equal null => they both create Always condition. 
+            var conditionList = new List<ConditionDefinition>() {ConditionDefinition.Always};
             //ConditionDefinition Condition = ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("CheckAllSubprocessesCompleted", "0",
             //    ""), false, null);
             //Condition.Type = ConditionType.Action;
             //conditionList.Add(Condition);
-            TransitionDefinition Transition = TransitionDefinition.Create(TransistionName,
-                                                                          TransitionClassifier.NotSpecified,
-                                                                          ConcatenationType.And,
-                                                                          ConcatenationType.And,
-                                                                          ConcatenationType.And,
-                                                                          firstActivity,
-                                                                          finalActivity,
-                                                                          TriggerDefinition.Auto,
-                                                                          conditionList);
-            // Transition.Trigger.Type = TriggerType.Command;
-            Transition.Trigger.Command = pd.Commands.First();
-            Transition.IsFork = true;
-            Transition = Transition.SetSubprocessSettings(TransistionName,
-                                                     Guid.NewGuid().ToString(),
-                                                     false,
-                                                     false,
-                                                     SubprocessInOutDefinition.Start,
-                                                     SubprocessStartupType.AnotherThread,
-                                                     SubprocessStartupParameterCopyStrategy.CopyAll,
-                                                     SubprocessFinalizeParameterMergeStrategy.OverwriteAllNulls,
-                                                     null);
+            var Transition = TransitionDefinition.Create(
+                TransistionName,
+                TransitionClassifier.NotSpecified,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                firstActivity,
+                finalActivity,
+                new TriggerDefinition(TriggerType.Command) {Command = pd.Commands.First()},
+                conditionList
+                );
+            
+            //Temporarily commented this because distractions.
+            /*Transition.IsFork = true;
+            Transition = Transition.SetSubprocessSettings(
+                TransistionName,
+                Guid.NewGuid().ToString(),
+                false,
+                false,
+                SubprocessInOutDefinition.Start,
+                SubprocessStartupType.AnotherThread,
+                SubprocessStartupParameterCopyStrategy.CopyAll,
+                SubprocessFinalizeParameterMergeStrategy.OverwriteAllNulls,
+                null
+            );*/
             //Transition.Conditions = conditionList;
 
             pd.Transitions.Add(Transition);
@@ -76,13 +83,20 @@ namespace MergeWorkflow
 
         public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
-            var pd = ProcessDefinition.Create(schemeCode + "SimpleProcess", false, new List<ActorDefinition>(),
-                new List<ParameterDefinition>(), new List<CommandDefinition>() { CommandDefinition.Create("CheckAllSubprocessesCompleted") }, new List<TimerDefinition>(),
-                new List<ActivityDefinition>(), new List<TransitionDefinition>(), new List<LocalizeDefinition>(),
-                new List<CodeActionDefinition>()
-                {
-
-                }, DesignerSettings.Empty, new List<string>());
+            var pd = ProcessDefinition.Create(
+                schemeCode + "SimpleProcess",
+                false, 
+                new List<ActorDefinition>(),
+                new List<ParameterDefinition>(),
+                new List<CommandDefinition>() { CommandDefinition.Create("CheckAllSubprocessesCompleted") }, 
+                new List<TimerDefinition>(),
+                new List<ActivityDefinition>(), 
+                new List<TransitionDefinition>(), 
+                new List<LocalizeDefinition>(),
+                new List<CodeActionDefinition>(), 
+                DesignerSettings.Empty,
+                new List<string>()
+                );
 
             object stageInfoList;
             parameters.TryGetValue("StagesInfo", out stageInfoList);

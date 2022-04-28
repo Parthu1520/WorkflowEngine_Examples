@@ -1,6 +1,7 @@
 ﻿using OptimaJet.Workflow.Core.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MergeWorkflow
 {
@@ -8,7 +9,17 @@ namespace MergeWorkflow
     {
         static void Main(string[] args)
         {
-            var pipeline = GetPipeline();
+            //var input = Console.ReadLine();
+            var input = "1";
+            Pipeline pipeline = null;
+            if (input == "0")
+            {
+                pipeline = GetPipeline().First();
+            }
+            else
+            {
+                pipeline = GetPipeline().Last();
+            }
             try
             {
                 var schemeCreationParameters = new Dictionary<string, object>() { { "StagesInfo", pipeline.Stages } };
@@ -30,7 +41,7 @@ namespace MergeWorkflow
             }
         }
 
-        private static Pipeline GetPipeline()
+        private static List<Pipeline> GetPipeline()
         {
             var pipe = new Pipeline
             {
@@ -114,8 +125,41 @@ namespace MergeWorkflow
                         }
 
             };
+            var pipe1 = new Pipeline
+            {
+                Id = "MergeWorkflow",
+                Name = "MergeWorkflow",
+                Stages = new List<StageInfo>
+                        {
+                            new StageInfo
+                            {
+                                Id = "Start" ,
+                                Stage = "Start" ,
+                            }, new StageInfo
+                            {
+                                Id = "ResourceCheck" ,
+                                Stage = "ResourceCheck" ,
+                            },
+                             new StageInfo
+                            {
+                                Id = "MergeBuild" ,
+                                Stage = "MergeBuild" ,
+                            },
+                            new StageInfo
+                            {
+                                Id = "BuildMDU",
+                                Stage = "BuildMDU",
+                            },
+                            new StageInfo
+                            {
+                                Id = "BuildSeriesStructure",
+                                Stage = "BuildSeriesStructure",
+                            }
+                        }
 
-            return pipe;
+            };
+
+            return new List<Pipeline> { pipe, pipe1 };
         }
     }
 }

@@ -23,7 +23,7 @@ namespace MergeWorkflow
                                                                           firstActivity,
                                                                           finalActivity,
                                                                           TriggerDefinition.Auto,
-                                                                          null);            
+                                                                          null);
             pd.Transitions.Add(Transition);
         }
 
@@ -32,10 +32,10 @@ namespace MergeWorkflow
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
             var conditionList = new List<ConditionDefinition>();
-            ConditionDefinition Condition = ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("CheckAllSubprocessesCompleted", "0",
-                ""), false, null);
-            Condition.Type = ConditionType.Action;
-            conditionList.Add(Condition);
+            //ConditionDefinition Condition = ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("CheckAllSubprocessesCompleted", "0",
+            //    ""), false, null);
+            //Condition.Type = ConditionType.Action;
+            //conditionList.Add(Condition);
             TransitionDefinition Transition = TransitionDefinition.Create(TransistionName,
                                                                           TransitionClassifier.NotSpecified,
                                                                           ConcatenationType.And,
@@ -45,8 +45,8 @@ namespace MergeWorkflow
                                                                           finalActivity,
                                                                           TriggerDefinition.Auto,
                                                                           conditionList);
-            Transition.Trigger.Type = TriggerType.Auto;
-            Transition.Trigger.Command = CommandDefinition.Create("CreateSubProcess");
+            // Transition.Trigger.Type = TriggerType.Command;
+            Transition.Trigger.Command = pd.Commands.First();
             Transition.IsFork = true;
             Transition = Transition.SetSubprocessSettings(TransistionName,
                                                      Guid.NewGuid().ToString(),
@@ -57,7 +57,7 @@ namespace MergeWorkflow
                                                      SubprocessStartupParameterCopyStrategy.CopyAll,
                                                      SubprocessFinalizeParameterMergeStrategy.OverwriteAllNulls,
                                                      null);
-            Transition.Conditions = conditionList;
+            //Transition.Conditions = conditionList;
 
             pd.Transitions.Add(Transition);
 
@@ -102,7 +102,6 @@ namespace MergeWorkflow
             CreateCommandTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "BuildMDU"), true);
             CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildMDU"), pd.Activities.First(x => x.Name == "BuildSeriesStructure"), false);
             CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildSeriesStructure"), pd.Activities.First(x => x.Name == "MergeBuild"), false);
-            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "MergeBuild"), false);
 
 
             (bool success, List<string> errors, string failedstep) = WorkflowInit.Runtime.Builder

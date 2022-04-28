@@ -82,7 +82,7 @@ namespace MergeWorkflow
             return Task.Run(() => {
                 var commands = arg2.GetAvailableCommands(arg1.ProcessId, "");
                 var activity = arg1.GetParameter<string>("CurrentActivity");
-                Console.WriteLine("CurrentActivity: " + arg1.CurrentActivity.Name);
+                Console.WriteLine("CurrentActivity: " + arg1.CurrentActivity.Name + ", Command count: " + commands.Count());
             });
         }
 

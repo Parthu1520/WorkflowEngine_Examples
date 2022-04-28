@@ -21,7 +21,7 @@ namespace MergeWorkflow
                 };
                 WorkflowInit.Runtime.SetSchemeIsObsolete(pipeline.Name, schemeCreationParameters);
                 WorkflowInit.Runtime.CreateInstanceAsync(createInstanceParameters);
-                Console.Read();
+                Console.ReadLine();
             }
             catch (System.Exception)
             {

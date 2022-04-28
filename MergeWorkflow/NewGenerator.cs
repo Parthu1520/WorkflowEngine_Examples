@@ -31,6 +31,7 @@ namespace MergeWorkflow
                                                      SubprocessFinalizeParameterMergeStrategy.OverwriteSpecified, null);
                 Transition.IsFork = true;
             }
+
             pd.Transitions.Add(Transition);
         }
 
@@ -38,7 +39,7 @@ namespace MergeWorkflow
             ActivityDefinition finalActivity)
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
-            string ObjectParameter = "{\"Mode\" : \"AllSubprocessesAndParent\"}";
+            string ObjectParameter = "{\"Mode\" : \"AllSubprocesses\"}";
             var conditionList = new List<ConditionDefinition>();
             ConditionDefinition Condition = ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("CheckAllSubprocessesCompleted", "0", ObjectParameter.ToString()), false, null);
             Condition.Type = ConditionType.Action;
@@ -59,7 +60,6 @@ namespace MergeWorkflow
                                                                           finalActivity, TriggerDefinition.Auto, null);
 
             Transition.IsFork = true;
-            Transition.Trigger.Type = TriggerType.Auto;
             Transition.SubprocessInOutDefinition = SubprocessInOutDefinition.Finalize;
             if (isMerge)
             {
@@ -68,20 +68,21 @@ namespace MergeWorkflow
             pd.Transitions.Add(Transition);
         }
 
-        private static void CreateAndAddActivities(ProcessDefinition pd, String stageName, bool IsInitial, bool IsFinal, bool isInline = false)
+        private static void CreateAndAddActivities(ProcessDefinition pd, String stageName, bool IsInitial, bool IsFinal)
         {
             ActivityDefinition newActivity = ActivityDefinition.Create(stageName, stageName, IsInitial, IsFinal, true, true);
-            if (isInline)
-            {
-                newActivity.ActivityType = ActivityType.Inline;
-            }
-            newActivity.AddAction(ActionDefinitionReference.Create(stageName, "0", null));
+            newActivity.AddAction(ActionDefinitionReference.Create(stageName, "1", null));
             pd.Activities.Add(newActivity);
         }
 
         public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
-            var pd = ProcessDefinition.Create(schemeCode + "SimpleProcess", false, new List<ActorDefinition>(),
+           // var code = "var activity = processInstance.GetParameter<string>(\"CurrentActivity\");" +"\n"+
+           //     " Console.WriteLine(\"CurrentActivity: \" + activity);";
+           //var codeAction = CodeActionDefinition.Create("PingConsole",
+           //        ""
+           //        , code, "false", "Action", "false", null);
+           var pd = ProcessDefinition.Create(schemeCode + "SimpleProcess", false, new List<ActorDefinition>(),
                 new List<ParameterDefinition>()
                 {
                     ParameterDefinition.Create("SubProcessName",typeof(string),ParameterPurpose.Temporary,"ImageProcessing"),
@@ -93,7 +94,13 @@ namespace MergeWorkflow
                 },
                 new List<TimerDefinition>(),
                 new List<ActivityDefinition>(), new List<TransitionDefinition>(), new List<LocalizeDefinition>(),
-                new List<CodeActionDefinition>(), DesignerSettings.Empty, new List<string>());
+                new List<CodeActionDefinition>()
+                {
+                   // codeAction
+                },
+                DesignerSettings.Empty, new List<string>());
+
+           // pd.CodeActionsCommonUsings = "System.IO;OptimaJet.Workflow;OptimaJet.WorkflowServer.Services.PostgreSql;FxResources.System.Net.Http;OptimaJet.WorkflowServer.Integration;OptimaJet.WorkflowServer.Model.MongoDB;System.Net;OptimaJet.WorkflowServer.Persistence;OptimaJet.WorkflowServer.Initializing;System;OptimaJet.WorkflowServer.Identity.IdentityDataProvider;OptimaJet.WorkflowServer.Model.PostgreSQL;System.Collections.Generic;System.Net.Http.HPack;OptimaJet.WorkflowServer.Forms;System.Threading;OptimaJet.WorkflowServer.Integration.Base.Interfaces;OptimaJet.Logging;OptimaJet.WorkflowServer;OptimaJet.WorkflowServer.Services.MySql;System.Collections;OptimaJet.WorkflowServer.Utils;System.Linq;OptimaJet.WorkflowServer.Forms.Model;OptimaJet.WorkflowServer.Model.Oracle;System.Net.Security;System.Runtime.CompilerServices;OptimaJet.WorkflowServer.Services.Cors;OptimaJet.WorkflowServer.Callback;Microsoft.Extensions.Internal;OptimaJet.Logging.Database;OptimaJet.WorkflowServer.Identity.Native;OptimaJet.WorkflowServer.RuleProviders;OptimaJet.Workflow.Core.Runtime;OptimaJet.WorkflowServer.BackgoundTasks;System.Net.Http;OptimaJet.WorkflowServer.Identity;OptimaJet.WorkflowServer.Services.MsSql;System.Net.Http.QPack;Microsoft.CSharp;OptimaJet.WorkflowServer.Model.Users;OptimaJet.WorkflowServer.Services.MongoDB;OptimaJet.WorkflowServer.Integration.Base.Classes;System.Threading.Tasks;Microsoft.CodeAnalysis;OptimaJet.WorkflowServer.Logging;OptimaJet.WorkflowServer.Services;System.Dynamic;System.Net.Http.Headers;Microsoft.CSharp.RuntimeBinder;System.Text;OptimaJet.WorkflowServer.Services.Oracle;OptimaJet.WorkflowServer.Model.MSSQL;OptimaJet.WorkflowServer.Hubs;OptimaJet.Workflow.Core.Model;OptimaJet.WorkflowServer.Identity.Sync;OptimaJet.WorkflowServer.Model;OptimaJet.WorkflowServer.Model.MySQL;OptimaJet.WorkflowServer.License;";
 
             object stageInfoList;
             parameters.TryGetValue("StagesInfo", out stageInfoList);
@@ -108,9 +115,9 @@ namespace MergeWorkflow
             List<ActivityDefinition> ActivitiesList = pd.Activities;
 
             CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "Start"), pd.Activities.First(x => x.Name == "ResourceCheck"), false);
+            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "MergeBuild"), false);
             CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "BuildMDU"), true);
             CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "BuildSeriesStructure"), true);
-            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "MergeBuild"), false);
             CreateMergeProcessTransition(pd, pd.Activities.First(x => x.Name == "BuildMDU"), pd.Activities.First(x => x.Name == "MergeBuild"));
             CreateMergeProcessTransition(pd, pd.Activities.First(x => x.Name == "BuildSeriesStructure"), pd.Activities.First(x => x.Name == "MergeBuild"));
             CreateCheckTransition(pd, pd.Activities.First(x => x.Name == "MergeBuild"), pd.Activities.First(x => x.Name == "BuildMDUAndSSStatus"));

@@ -41,7 +41,7 @@ namespace MergeWorkflow
             var dbProvider = new MSSQLProvider(ConnectionString);
 
             var builder = new WorkflowBuilder<XElement>(
-                new NewGenerator(),
+                new CommandGenerator(),
                 new OptimaJet.Workflow.Core.Parser.XmlWorkflowParser(),
                 dbProvider
             );
@@ -76,7 +76,7 @@ namespace MergeWorkflow
 
             #region Single Code Action For all stages combined
 
-            runtime.EnableCodeActions();
+            //runtime.EnableCodeActions();
             runtime.RegisterAssemblyForCodeActions(
                  Assembly.GetAssembly(typeof(ProcessingStagesActionProvider)));
 

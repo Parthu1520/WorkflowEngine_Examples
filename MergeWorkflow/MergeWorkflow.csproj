@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>MergeWorkflow.InlineProgram</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -78,7 +81,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AxialProcessingActionProvider.cs" />
     <Compile Include="CommandGenerator.cs" />
+    <Compile Include="CustomBuildStep.cs" />
+    <Compile Include="ExternalParameterProvider.cs" />
+    <Compile Include="Generator.cs" />
+    <Compile Include="ImageProcessGenerator.cs" />
+    <Compile Include="InlineProgram.cs" />
+    <Compile Include="InlineSchemeGenerator.cs" />
     <Compile Include="NewGenerator.cs" />
     <Compile Include="Pipeline.cs" />
     <Compile Include="ProcessingStagesActionProvider.cs" />

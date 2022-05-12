@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace MergeWorkflow
 {
-    public class CommandGenerator : IWorkflowGenerator<XElement>
+   public class ImageProcessGenerator : IWorkflowGenerator<XElement>
     {
         private static void CreateAndAddTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
             ActivityDefinition finalActivity)
@@ -28,6 +28,7 @@ namespace MergeWorkflow
                 );
             pd.Transitions.Add(Transition);
         }
+        static int count = 0;
         private static void CreateCommandTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
             ActivityDefinition finalActivity)
         {
@@ -45,11 +46,12 @@ namespace MergeWorkflow
                 conditionList
                 );
             Transition.IsFork = true;
-            Transition = Transition.SetSubprocessSettings("@Comment+\"_\"+@Test", "@SomeParameterContainingGuid", false, false, SubprocessInOutDefinition.Start,
+            Transition = Transition.SetSubprocessSettings("@Comment+\"_\"+@Test", Guid.NewGuid().ToString(), false, false, SubprocessInOutDefinition.Start,
                                                      SubprocessStartupType.AnotherThread, SubprocessStartupParameterCopyStrategy.CopyAll,
                                                      SubprocessFinalizeParameterMergeStrategy.OverwriteSpecified, null);
-            //Transition.SubprocessName = "@Comment+\"_\"+@Test";
+            // Transition.SubprocessName = TransistionName + count;
             pd.Transitions.Add(Transition);
+            count++;
 
         }
         private static void CreateEndWorkflowCommandTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
@@ -70,6 +72,7 @@ namespace MergeWorkflow
                 );
             Transition.IsFork = true;
             pd.Transitions.Add(Transition);
+            count++;
 
         }
 
@@ -90,7 +93,7 @@ namespace MergeWorkflow
                 schemeCode + "SimpleProcess",
                 false,
                 new List<ActorDefinition>(),
-                new List<ParameterDefinition>() { ParameterDefinition.Create("Comment", "String", "Temporary", "123"), ParameterDefinition.Create("Test", "Int16", "Temporary", "123") },
+                new List<ParameterDefinition>() { ParameterDefinition.Create("Comment", "String", "Temporary", "123"), ParameterDefinition.Create("Test", "String", "Temporary", "123") },
                 new List<CommandDefinition>() { CommandDefinition.Create("CreateSubProcess"), CommandDefinition.Create("EndWorkflow") },
                 new List<TimerDefinition>(),
                 new List<ActivityDefinition>(),

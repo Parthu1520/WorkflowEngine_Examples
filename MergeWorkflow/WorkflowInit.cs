@@ -6,7 +6,7 @@ using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.DbPersistence;
-
+using OptimaJet.Workflow.Plugins;
 
 namespace MergeWorkflow
 {
@@ -41,15 +41,17 @@ namespace MergeWorkflow
             var dbProvider = new MSSQLProvider(ConnectionString);
 
             var builder = new WorkflowBuilder<XElement>(
-                new CommandGenerator(),
+                new Generator(),
                 new OptimaJet.Workflow.Core.Parser.XmlWorkflowParser(),
                 dbProvider
             );
 
-           // builder.AddBuildStep(0, BuildStepPosition.BeforeSystemSteps, new CustomBuildStep());
+           //builder.AddBuildStep(0, BuildStepPosition.BeforeSystemSteps, new CustomBuildStep());
 
             var runtime = new WorkflowRuntime()
                 .WithBuilder(builder)
+                //This plugin contains the CheckAllSubprocessesCompleted condition implementation
+                .WithPlugin(new BasicPlugin())
                 .WithPersistenceProvider(dbProvider)
                 .EnableCodeActions()
                 .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
@@ -77,10 +79,13 @@ namespace MergeWorkflow
             #region Single Code Action For all stages combined
 
             //runtime.EnableCodeActions();
-            runtime.RegisterAssemblyForCodeActions(
-                 Assembly.GetAssembly(typeof(ProcessingStagesActionProvider)));
+            //runtime.RegisterAssemblyForCodeActions(
+            //     Assembly.GetAssembly(typeof(ProcessingStagesActionProvider)));
 
-            runtime.WithActionProvider(ProcessingStagesActionProvider.GetActionProvider());
+            runtime.RegisterAssemblyForCodeActions(
+                Assembly.GetAssembly(typeof(AxialProcessingActionProvider)));
+
+            runtime.WithActionProvider(AxialProcessingActionProvider.GetActionProvider());
 
             #endregion
 

@@ -26,9 +26,9 @@ namespace MergeWorkflow
             _actions.Add("F3", F3);
             _actions.Add("D1", D1);
             _actions.Add("D2",D2);
-            _actions.Add("Start", Final);
+            _actions.Add("Start", Start);
             _actions.Add("Final", Final); 
-            _actions.Add("Intermediate", Final); 
+            _actions.Add("Intermediate", Intermediate); 
             _actions.Add("ImagesDilutionProcessingStage", F1);
             _actions.Add("BurnTextProcessingStage", F3);
             _actions.Add("CreateLogoImageProcessingStage", D1);
@@ -51,7 +51,7 @@ namespace MergeWorkflow
         System.Timers.Timer timer;
         private bool SelfTransition(ProcessInstance arg1, WorkflowRuntime arg2, string arg3)
         {
-            return false;
+            return true;
         }
 
         int c = 0;

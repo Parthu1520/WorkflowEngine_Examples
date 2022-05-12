@@ -12,7 +12,7 @@ namespace MergeWorkflow
     public class CommandGenerator : IWorkflowGenerator<XElement>
     {
         private static void CreateAndAddTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
-            ActivityDefinition finalActivity, bool isSubprocess, bool isMerge = false, bool isSubProcessFinal = false)
+            ActivityDefinition finalActivity)
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
             var Transition = TransitionDefinition.Create(
@@ -28,17 +28,11 @@ namespace MergeWorkflow
                 );
             pd.Transitions.Add(Transition);
         }
-
         private static void CreateCommandTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
-            ActivityDefinition finalActivity, bool isSubprocess, bool isMerge = false, bool isSubProcessFinal = false)
+            ActivityDefinition finalActivity)
         {
             string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
-            // This condition list equal null => they both create Always condition. 
-            var conditionList = new List<ConditionDefinition>() {ConditionDefinition.Always};
-            //ConditionDefinition Condition = ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("CheckAllSubprocessesCompleted", "0",
-            //    ""), false, null);
-            //Condition.Type = ConditionType.Action;
-            //conditionList.Add(Condition);
+            var conditionList = new List<ConditionDefinition>() { ConditionDefinition.Always };
             var Transition = TransitionDefinition.Create(
                 TransistionName,
                 TransitionClassifier.NotSpecified,
@@ -47,25 +41,34 @@ namespace MergeWorkflow
                 ConcatenationType.And,
                 firstActivity,
                 finalActivity,
-                new TriggerDefinition(TriggerType.Command) {Command = pd.Commands.First()},
+                new TriggerDefinition(TriggerType.Command) { Command = pd.Commands.First() },
                 conditionList
                 );
-            
-            //Temporarily commented this because distractions.
-            /*Transition.IsFork = true;
-            Transition = Transition.SetSubprocessSettings(
-                TransistionName,
-                Guid.NewGuid().ToString(),
-                false,
-                false,
-                SubprocessInOutDefinition.Start,
-                SubprocessStartupType.AnotherThread,
-                SubprocessStartupParameterCopyStrategy.CopyAll,
-                SubprocessFinalizeParameterMergeStrategy.OverwriteAllNulls,
-                null
-            );*/
-            //Transition.Conditions = conditionList;
+            Transition.IsFork = true;
+            Transition = Transition.SetSubprocessSettings("@Comment+\"_\"+@Test", "@SomeParameterContainingGuid", false, false, SubprocessInOutDefinition.Start,
+                                                     SubprocessStartupType.AnotherThread, SubprocessStartupParameterCopyStrategy.CopyAll,
+                                                     SubprocessFinalizeParameterMergeStrategy.OverwriteSpecified, null);
+            //Transition.SubprocessName = "@Comment+\"_\"+@Test";
+            pd.Transitions.Add(Transition);
 
+        }
+        private static void CreateEndWorkflowCommandTransitions(ProcessDefinition pd, ActivityDefinition firstActivity,
+           ActivityDefinition finalActivity)
+        {
+            string TransistionName = firstActivity.Name + "To" + finalActivity.Name;
+            var conditionList = new List<ConditionDefinition>() { ConditionDefinition.Always };
+            var Transition = TransitionDefinition.Create(
+                TransistionName,
+                TransitionClassifier.NotSpecified,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                ConcatenationType.And,
+                firstActivity,
+                finalActivity,
+                new TriggerDefinition(TriggerType.Command) { Command = pd.Commands.Last() },
+                conditionList
+                );
+            Transition.IsFork = true;
             pd.Transitions.Add(Transition);
 
         }
@@ -85,15 +88,15 @@ namespace MergeWorkflow
         {
             var pd = ProcessDefinition.Create(
                 schemeCode + "SimpleProcess",
-                false, 
+                false,
                 new List<ActorDefinition>(),
-                new List<ParameterDefinition>(),
-                new List<CommandDefinition>() { CommandDefinition.Create("CheckAllSubprocessesCompleted") }, 
+                new List<ParameterDefinition>() { ParameterDefinition.Create("Comment", "String", "Temporary", "123"), ParameterDefinition.Create("Test", "Int16", "Temporary", "123") },
+                new List<CommandDefinition>() { CommandDefinition.Create("CreateSubProcess"), CommandDefinition.Create("EndWorkflow") },
                 new List<TimerDefinition>(),
-                new List<ActivityDefinition>(), 
-                new List<TransitionDefinition>(), 
+                new List<ActivityDefinition>(),
+                new List<TransitionDefinition>(),
                 new List<LocalizeDefinition>(),
-                new List<CodeActionDefinition>(), 
+                new List<CodeActionDefinition>(),
                 DesignerSettings.Empty,
                 new List<string>()
                 );
@@ -112,14 +115,13 @@ namespace MergeWorkflow
             int NoOfActivities = pd.Activities.Count;
             List<ActivityDefinition> ActivitiesList = pd.Activities;
 
-            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "Start"), pd.Activities.First(x => x.Name == "ResourceCheck"), false);
-            CreateCommandTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "BuildMDU"), true);
-            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildMDU"), pd.Activities.First(x => x.Name == "BuildSeriesStructure"), false);
-            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildSeriesStructure"), pd.Activities.First(x => x.Name == "MergeBuild"), false);
+            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "Start"), pd.Activities.First(x => x.Name == "ResourceCheck"));
+            CreateCommandTransitions(pd, pd.Activities.First(x => x.Name == "ResourceCheck"), pd.Activities.First(x => x.Name == "BuildMDU"));
+            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildMDU"), pd.Activities.First(x => x.Name == "BuildSeriesStructure"));
+            CreateAndAddTransitions(pd, pd.Activities.First(x => x.Name == "BuildSeriesStructure"), pd.Activities.First(x => x.Name == "MergeBuild"));
 
 
-            (bool success, List<string> errors, string failedstep) = WorkflowInit.Runtime.Builder
-                .SaveProcessSchemeAsync(schemeCode, pd).Result;
+            WorkflowInit.Runtime.Builder.SaveProcessSchemeAsync(schemeCode, pd);
 
             var pd1 = XElement.Parse(pd.Serialize());
             return pd1;

@@ -48,7 +48,7 @@ namespace MergeWorkflow
                 {
                     List<string> inlinedSchemes = builder.GetInlinedSchemeCodesAsync().Result;
                     ActivityDefinition StartActivity = null;
-                    //ActivityDefinition AxialProcessingSegment = null;
+                    ActivityDefinition AxialProcessingSegment = null;
                     ActivityDefinition FinalActivity = null;
                     ActivityDefinition Intermediate = null;
                     StartActivity = modifiedProcessDefinition.FindActivity("Start");
@@ -65,7 +65,7 @@ namespace MergeWorkflow
                     if (StartActivity != null && FinalActivity != null)
                     {
                         CreateAndAddTransitions(modifiedProcessDefinition, StartActivity, Intermediate, false);
-                        CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, Intermediate, true, conditions: conditonList);
+                        CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, Intermediate, false, conditions: conditonList);
                         CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, FinalActivity, false);
                     }
                 }

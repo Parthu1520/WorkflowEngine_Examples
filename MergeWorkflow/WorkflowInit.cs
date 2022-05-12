@@ -41,7 +41,7 @@ namespace MergeWorkflow
             var dbProvider = new MSSQLProvider(ConnectionString);
 
             var builder = new WorkflowBuilder<XElement>(
-                new Generator(),
+                new SelfGenerator(),
                 new OptimaJet.Workflow.Core.Parser.XmlWorkflowParser(),
                 dbProvider
             );

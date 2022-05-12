@@ -48,14 +48,14 @@ namespace MergeWorkflow
                 {
                     List<string> inlinedSchemes = builder.GetInlinedSchemeCodesAsync().Result;
                     ActivityDefinition StartActivity = null;
-                    ActivityDefinition AxialProcessingSegment = null;
+                    //ActivityDefinition AxialProcessingSegment = null;
                     ActivityDefinition FinalActivity = null;
                     ActivityDefinition Intermediate = null;
                     StartActivity = modifiedProcessDefinition.FindActivity("Start");
                     FinalActivity = modifiedProcessDefinition.FindActivity("Final");
                     Intermediate = modifiedProcessDefinition.FindActivity("Intermediate");
-                    AxialProcessingSegment = ActivityDefinition.CreateInlineActivity("AxialProcessing", inlinedSchemes.Find(a => a.StartsWith("ProduceMPRSegment")));
-                    modifiedProcessDefinition.Activities.Add(AxialProcessingSegment);
+                    //AxialProcessingSegment = ActivityDefinition.CreateInlineActivity("AxialProcessing", inlinedSchemes.Find(a => a.StartsWith("ProduceMPRSegment")));
+                    //modifiedProcessDefinition.Activities.Add(AxialProcessingSegment);
                     List<TransitionDefinition> translist = modifiedProcessDefinition.Transitions;
                     ConditionDefinition Condition =
               ConditionDefinition.CreateActionCondition(ActionDefinitionReference.Create("SelfTransition", "0", null),
@@ -66,8 +66,7 @@ namespace MergeWorkflow
                     {
                         CreateAndAddTransitions(modifiedProcessDefinition, StartActivity, Intermediate, false);
                         CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, Intermediate, true, conditions: conditonList);
-                        CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, AxialProcessingSegment, false);
-                        CreateAndAddTransitions(modifiedProcessDefinition, AxialProcessingSegment, FinalActivity, false);
+                        CreateAndAddTransitions(modifiedProcessDefinition, Intermediate, FinalActivity, false);
                     }
                 }
             }
